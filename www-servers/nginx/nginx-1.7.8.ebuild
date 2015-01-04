@@ -552,7 +552,7 @@ src_install() {
 	if use nginx_modules_http_perl; then
 		cd "${S}"/objs/src/http/modules/perl/
 		einstall DESTDIR="${D}" INSTALLDIRS=vendor
-		fixlocalpod
+		perl_delete_localpod
 	fi
 
 	if use nginx_modules_http_cache_purge; then
