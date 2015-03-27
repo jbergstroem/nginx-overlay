@@ -59,7 +59,7 @@ HTTP_LUA_MODULE_P="ngx_http_lua-${HTTP_LUA_MODULE_PV}"
 HTTP_LUA_MODULE_URI="https://github.com/openresty/lua-nginx-module/archive/v${HTTP_LUA_MODULE_PV}.tar.gz"
 HTTP_LUA_MODULE_WD="${WORKDIR}/lua-nginx-module-${HTTP_LUA_MODULE_PV}"
 
-# http_auth_pam (http://web.iti.upv.es/~sto/nginx/, https://github.com/stogh/ngx_http_auth_pam_module/, BSD-2 license)
+# http_auth_pam (http://web.iti.upv.es/~sto/nginx/, BSD-2 license)
 HTTP_AUTH_PAM_MODULE_PV="1.4"
 HTTP_AUTH_PAM_MODULE_P="ngx_http_auth_pam-${HTTP_AUTH_PAM_MODULE_PV}"
 HTTP_AUTH_PAM_MODULE_URI="https://github.com/stogh/ngx_http_auth_pam_module/archive/v${HTTP_AUTH_PAM_MODULE_PV}.tar.gz"
@@ -121,9 +121,9 @@ HTTP_STICKY_MODULE_URI="https://bitbucket.org/nginx-goodies/nginx-sticky-module-
 HTTP_STICKY_MODULE_WD="${WORKDIR}/nginx-goodies-nginx-sticky-module-ng-bd312d586752"
 
 # ajp-module (https://github.com/yaoweibin/nginx_ajp_module, BSD-2)
-HTTP_AJP_MODULE_PV="bf6cd93f2098b59260de8d494f0f4b1f11a84627"
+HTTP_AJP_MODULE_PV="0.3.0"
 HTTP_AJP_MODULE_P="ngx_http_ajp_module-${HTTP_AJP_MODULE_PV}"
-HTTP_AJP_MODULE_URI="https://github.com/yaoweibin/nginx_ajp_module/archive/${HTTP_AJP_MODULE_PV}.tar.gz"
+HTTP_AJP_MODULE_URI="https://github.com/yaoweibin/nginx_ajp_module/archive/v${HTTP_AJP_MODULE_PV}.tar.gz"
 HTTP_AJP_MODULE_WD="${WORKDIR}/nginx_ajp_module-${HTTP_AJP_MODULE_PV}"
 
 # mogilefs-module (http://www.grid.net.ru/nginx/mogilefs.en.html, BSD-2)
@@ -211,8 +211,8 @@ done
 CDEPEND="
 	pcre? ( >=dev-libs/libpcre-4.2 )
 	pcre-jit? ( >=dev-libs/libpcre-8.20[jit] )
-	ssl? ( dev-libs/openssl:= )
-	http-cache? ( userland_GNU? ( dev-libs/openssl:= ) )
+	ssl? ( dev-libs/openssl:0= )
+	http-cache? ( userland_GNU? ( dev-libs/openssl:0= ) )
 	nginx_modules_http_geoip? ( dev-libs/geoip )
 	nginx_modules_http_gunzip? ( sys-libs/zlib )
 	nginx_modules_http_gzip? ( sys-libs/zlib )
@@ -220,10 +220,10 @@ CDEPEND="
 	nginx_modules_http_image_filter? ( media-libs/gd[jpeg,png] )
 	nginx_modules_http_perl? ( >=dev-lang/perl-5.8 )
 	nginx_modules_http_rewrite? ( >=dev-libs/libpcre-4.2 )
-	nginx_modules_http_secure_link? ( userland_GNU? ( dev-libs/openssl:= ) )
-	nginx_modules_http_spdy? ( >=dev-libs/openssl-1.0.1c:= )
+	nginx_modules_http_secure_link? ( userland_GNU? ( dev-libs/openssl:0= ) )
+	nginx_modules_http_spdy? ( >=dev-libs/openssl-1.0.1c:0= )
 	nginx_modules_http_xslt? ( dev-libs/libxml2 dev-libs/libxslt )
-	nginx_modules_http_lua? ( !luajit? ( dev-lang/lua:= ) luajit? ( dev-lang/luajit:= ) )
+	nginx_modules_http_lua? ( !luajit? ( dev-lang/lua:0= ) luajit? ( dev-lang/luajit:2= ) )
 	nginx_modules_http_auth_pam? ( virtual/pam )
 	nginx_modules_http_metrics? ( dev-libs/yajl )
 	nginx_modules_http_dav_ext? ( dev-libs/expat )
@@ -280,7 +280,13 @@ src_prepare() {
 	fi
 
 	if use nginx_modules_http_lua; then
-		sed -i -e 's/-llua5.1/-llua/' "${HTTP_LUA_MODULE_WD}/config"
+		sed -i -e 's/-llua5.1/-llua/' "${HTTP_LUA_MODULE_WD}/config" || die
+	fi
+
+	if use nginx_modules_http_ajp; then
+		pushd "${HTTP_AJP_MODULE_WD}" > /dev/null
+		epatch "${FILESDIR}"/AJP-nginx-1.7.9+.patch
+		popd > /dev/null
 	fi
 
 	find auto/ -type f -print0 | xargs -0 sed -i 's:\&\& make:\&\& \\$(MAKE):' || die
@@ -552,7 +558,7 @@ src_install() {
 
 	if use nginx_modules_http_perl; then
 		cd "${S}"/objs/src/http/modules/perl/
-		einstall DESTDIR="${D%/}" INSTALLDIRS=vendor
+		emake DESTDIR="${D}" INSTALLDIRS=vendor
 		perl_delete_localpod
 	fi
 
