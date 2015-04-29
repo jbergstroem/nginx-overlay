@@ -2,41 +2,58 @@
 
 This repository contains additional versions of gentoo's nginx ebuilds.
 
-The main purpose is to keep older versions around for those that prefer to use
-releases from the nginx 'stable' branch, although [upstream recommendation][1]
-is to stick with mainline.
-
-The repository will also contain newer and/or experimental versions that
-requires further testing before landing in the gentoo portage tree.
+The ambition is to have a more thorough review and collaboration effort
+in this repository before landing the final result in gentoo-x86. The easiest
+way to collaborate is by reviewing/testing Pull Requests or submitting one
+yourself.
 
 Older ebuilds will use unstable (~) keywording while experimental ebuilds
-lacks any keywording. Please adjust your portage configuration
-accordingly. Only bugfixes will be backported. If you're interested in newer
-3rd party modules, consider moving to the latest available version.
+lacks keywording. Please adjust your portage configuration accordingly.
+Only bugfixes will be backported. If you're interested in newer 3rd-party
+modules, consider moving to the latest development version.
 
 If you choose to use this overlay as your preferred provider, please take note
 that this repository might not follow gentoo's ebuild versioning conventions
 (`-r1` or similar bumps). Keep track of the repository changelog and rebuild
 if relevant.
 
+
 ### Usage
 
-Gentoo has a handy tool for managing third party overlays called [layman][3].
-After installing it, sync and add the nginx-overlay:
+More recent versions of Portage allows you to add additional repositories by
+adding a config file in `/etc/portage/repos.conf`. Here's an example:
 
-```bash
-$ layman -S
-$ layman -a nginx-overlay
+```ini
+[nginx-overlay]
+location = /var/db/repos/nginx-overlay
+sync-type = git
+sync-uri = git://github.com/gentoo/nginx-overlay.git
+auto-sync = yes
 ```
 
 Keyword as appropriate and use emerge like you normally would do.
 
+
 ### Branch workflow
 
 The **master** branch is always considered being production ready, which means
-that all development should be made in branches. All commits and merges to
-**master** should be signed off (`-s`) and preferably signed (`-S`). Always
-keep history when merging a branch (`--no-ff`).
+that all development should be made in branches. Fork the repository, create
+a branch on your local git clone (or github account) and then create a Pull
+Request to have it considered for inclusion.
+
+All commits and merges to **master** should be signed off (`-s`) – unless you're
+merging your own commit – and preferably signed (`-S`). Always keep
+history when merging a branch (`--no-ff`).
+
+
+### History
+
+Nginx in Gentoo previously followed [upstream's conventions][1] regarding always
+following latest version. This changed with 1.8 and 1.9 since we during the 1.7
+cycle had issues with our wide range of third party modules that complicated
+security-related version bumps. In order to make sure we always have a concept
+of "stable", we will now use the stable branches as stable.
+
 
 ### Contributing
 
@@ -47,4 +64,3 @@ in the [Gentoo Bugzilla][2].
 
 [1]: http://nginx.com/blog/nginx-1-6-1-7-released/
 [2]: http://bugs.gentoo.org
-[3]: http://layman.sourceforge.net
